@@ -15,4 +15,20 @@ public class ProjectConfig {
     /*By adding the @Bean annotation, we instruct Spring
 to call this method when at context initialization and
 add the returned value to the context.*/
+
+    @Bean
+    String hello(){
+        return "Hello";
+    }
+
+    @Bean
+    Integer ten(){
+        return 10;
+    }
+
+    /*
+    Generally method names are verbs( because they represent action)
+    but in case of Bean , they represent object/bean (since their job is to only return object)
+    so names are noun
+     */
 }

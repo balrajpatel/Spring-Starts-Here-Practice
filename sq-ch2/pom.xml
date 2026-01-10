@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Java version used for compiling the project -->
     <!-- below explicitly  tells to use java 17 version (works best for spring) , >17 will be too new for spring -->
     <properties>
         <java.version>17</java.version>
@@ -21,6 +20,15 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>6.1.5</version>
+        </dependency>
+
+        <!-- You don’t need to add this dependency if you use a Java version smaller than Java
+        11. Before Java 11, the Java EE dependencies were part of the JDK. With Java 11,
+        the JDK was cleaned of the APIs not related to SE, including the Java EE dependencies. -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2</version>
         </dependency>
 
     </dependencies>

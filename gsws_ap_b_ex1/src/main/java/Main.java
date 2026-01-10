@@ -24,5 +24,9 @@ public class Main {
 
         Parrot p6 = context.getBean("Rani",Parrot.class);
         System.out.println(p6.getName());
+
+        Parrot p7 = context.getBean(Parrot.class);  // will return the primary bean instance among beans of same Parrot type.
+        // primary bean act as a default choice for that type instance
+        System.out.println(p7.getName());
     }
 }

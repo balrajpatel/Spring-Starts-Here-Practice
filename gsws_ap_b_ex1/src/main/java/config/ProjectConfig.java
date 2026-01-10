@@ -2,12 +2,14 @@ package config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import pkg1.Parrot;
 
 @Configuration  // this defines class as spring configuration class
 public class ProjectConfig {
     @Bean
-    Parrot parrot() {
+    @Primary     // setting bean as primary , so below bean will act as a default choice ,
+    Parrot parrot() {      // can't set multiple primary beans for the same type instance.
         var p = new Parrot();
         p.setName("Koko");
         return p;

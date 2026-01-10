@@ -17,6 +17,33 @@ to call this method when at context initialization and
 add the returned value to the context.*/
 
     @Bean
+    Parrot parrot2(){
+        var p = new Parrot();
+        p.setName("Miki");
+        return p;
+    }
+
+    @Bean
+    Parrot parrot3(){
+        var p = new Parrot();
+        p.setName("Riki");
+        return p;
+    }
+
+    @Bean(name = "tio")  //sets the name of the bean
+    Parrot parrot4(){
+        var p = new Parrot();
+        p.setName("Tika");
+        return p;
+    }
+
+    @Bean(value = "Rani") //set the name of the bean
+    Parrot parrot5(){
+        var p = new Parrot();
+        p.setName("Rani");
+        return p;
+    }
+    @Bean
     String hello(){
         return "Hello";
     }

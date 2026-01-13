@@ -14,6 +14,8 @@ public class Main {
         context.registerBean("parrot1",Parrot.class,supplier);
         //4th param can omit, because its a var args, it helps to configure this  instance like making it primary;
 
+        //registerBean approach works only on spring 5 and later
+
         Parrot parrot2 = context.getBean(Parrot.class);
                 System.out.println(parrot2.getName());
     }

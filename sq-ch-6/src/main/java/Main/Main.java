@@ -14,4 +14,9 @@ public class Main {
         CommentService commentService = context.getBean(CommentService.class);
         commentService.publishComment(comment);
     }
+
+    /*
+    @Service and @Repository are specialized stereotype annotations that extend @Component.
+    They behave the same for dependency injection, but @Repository additionally enables persistence exception translation.
+     */
 }

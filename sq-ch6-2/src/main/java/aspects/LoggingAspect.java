@@ -17,5 +17,15 @@ public class LoggingAspect {
         joinPoint.proceed();
         logger.info("Method executed");
     }
+    /*
+    In Spring AOP, only advice methods are actually executed as aspect logic.
+        Examples of advice methods:
+        @Around
+        @Before
+        @After
+        @AfterReturning
+        @AfterThrowing
 
+        Name of the method doesn't matter
+     */
 }

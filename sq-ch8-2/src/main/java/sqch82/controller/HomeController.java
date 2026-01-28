@@ -14,4 +14,7 @@ public class HomeController {
         return "home";
     }
     //@RequestParam to get the parameter's value from the Http request parameter having same name as of @Request Parameter's name.
+
+    //@RequestParam(optional=true).
+    //to make HTTp request parameters optional since by default they are mandatory.
 }

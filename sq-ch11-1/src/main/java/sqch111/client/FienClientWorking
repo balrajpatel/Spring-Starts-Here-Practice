@@ -1,0 +1,220 @@
+Browser / Postman
+   ↓
+App A: PaymentsController
+   ↓
+Feign Client (PaymentsProxy)
+   ↓   HTTP POST /payment
+   ↓   Header: requestId
+   ↓   Body: Payment JSON
+App B: PaymentsController
+   ↓
+ResponseEntity<Payment>
+   ↓
+Feign → Jackson → Payment object
+   ↓
+Returned back to App A controller
+
+
+
+1️⃣ What Happens in App A (Feign Client Side)
+Your controller (App A)
+java
+Copy code
+@PostMapping("/payment")
+public Payment getPayment(@RequestBody Payment payment) {
+    String requestId = UUID.randomUUID().toString();
+    return paymentsProxy.createPayment(requestId, payment);
+}
+Key idea
+This line 👇 is NOT a normal method call:
+java
+Copy code
+paymentsProxy.createPayment(requestId, payment);
+It looks like Java, but it actually means:
+
+“Send an HTTP request to another service.”
+
+2️⃣ What PaymentsProxy REALLY Is
+java
+Copy code
+@FeignClient(
+    name = "payments",
+    url = "${name.service.url}"
+)
+public interface PaymentsProxy {
+    @PostMapping("/payment")
+    Payment createPayment(
+        @RequestHeader String requestId,
+        @RequestBody Payment payment
+    );
+}
+At startup, Spring + Feign do this:
+Create a runtime proxy class
+Implement this interface dynamically
+Bind annotations to HTTP behavior
+So Feign interprets this as:
+
+yaml
+Copy code
+HTTP POST {base-url}/payment
+Headers:
+  requestId: <UUID>
+Body:
+  { "amount": 1000 }
+
+
+3️⃣ How the URL Is Resolved
+java
+Copy code
+url = "${name.service.url}"
+From application.properties (App A):
+
+properties
+Copy code
+name.service.url=http://localhost:8081
+So Feign builds:
+
+bash
+Copy code
+POST http://localhost:8081/payment
+⚠️ This must match App B’s port.
+
+4️⃣ Request Leaves App A (Important Part)
+Feign now sends this real HTTP request:
+
+yaml
+Copy code
+POST /payment HTTP/1.1
+Host: localhost:8081
+Content-Type: application/json
+requestId: 3f2c9e...
+
+{
+  "amount": 1000
+}
+
+5️⃣ Request Reaches App B Controller
+Your second controller:
+
+java
+Copy code
+@RestController
+public class PaymentsController {
+
+    @PostMapping("/payment")
+    public ResponseEntity<Payment> payment(
+            @RequestHeader String requestId,
+            @RequestBody Payment payment) {
+Why this matches perfectly
+Feign sends	App B receives
+POST /payment	@PostMapping("/payment")
+Header requestId	@RequestHeader String requestId
+JSON body	@RequestBody Payment payment
+✔ Perfect contract match
+✔ Spring MVC maps it instantly
+
+
+6️⃣ App B Processes the Request
+java
+Copy code
+logger.info("Received request with id "+ requestId);
+payment.setId(UUID.randomUUID().toString());
+Then responds:
+
+java
+Copy code
+return ResponseEntity
+        .status(HttpStatus.OK)
+        .header("requestId", requestId)
+        .body(payment);
+So the HTTP response is:
+
+makefile
+Copy code
+HTTP/1.1 200 OK
+requestId: 3f2c9e...
+Content-Type: application/json
+
+{
+  "id": "abc-123",
+  "amount": 1000
+}
+
+
+7️⃣ Response Travels Back to App A
+Now Feign does the reverse:
+
+Reads response body
+Uses Jackson
+Converts JSON → Payment
+Returns it from createPayment(...)
+
+So this line in App A:
+java
+Copy code
+return paymentsProxy.createPayment(requestId, payment);
+returns a fully populated Payment object.
+
+
+8️⃣ App A Sends Response to Client
+Because App A controller is a @RestController:
+
+java
+Copy code
+return Payment;
+Spring converts it back to JSON and sends it to:
+Browser
+Postman
+Frontend
+
+
+
+One JVM → one port
+So each Spring Boot app needs:
+its own run configuration
+its own server.port
+
+STEP 1️⃣ Open Both Apps in IntelliJ
+Option A (BEST – Recommended)
+Open both projects in the same IntelliJ window:
+File → Open → select App B → Open as Module
+Now you’ll see:
+Project
+ ├── app-a-feign-client
+ └── app-b-payments-service
+Option B
+Open them in two IntelliJ windows
+(also totally fine).
+
+STEP 2️⃣ Set Different Ports (CRITICAL)
+App B (Payments Service)
+application.properties
+server.port=8081
+
+App A (Feign Client)
+application.properties
+server.port=8080
+name.service.url=http://localhost:8081
+✔ App A calls App B
+✔ Ports don’t clash
+
+STEP 3️⃣ Enable Feign in App A
+In App A main class:
+@SpringBootApplication
+@EnableFeignClients
+public class AppAApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AppAApplication.class, args);
+    }
+}
+
+
+⚠️ Without this → Feign client won’t work.
+STEP 4️⃣ Create Run Configurations
+Method 1 (Easiest)
+Open App B
+Right-click main class → Run
+Open App A
+Right-click main class → Run
+✔ IntelliJ will create two separate run configs automatically
+
